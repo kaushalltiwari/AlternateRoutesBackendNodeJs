@@ -1,21 +1,9 @@
 const express = require('express');
 const app = express();
-const { MongoClient } = require('mongodb');
-const uri = "mongodb://localhost:27017/Alternateroutes"; 
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const { connectDb, insertAllStations } = require('./db')
 const port = 3000;
 
 
-async function run() {
-    try {
-      await client.connect();
-      console.log("Connected to MongoDB");
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  
-run();
 
 async function fetchWithOptions() {
     const response = await fetch('https://api.indiantrain.in/trains/FullStationList.json', {
@@ -37,15 +25,17 @@ async function fetchWithOptions() {
 app.get('/', async (req, res) => {
     try {
         const data = await fetchWithOptions();
-        res.send(data);
+        const status = await insertAllStations(data)
+        res.send(status);
     } catch (error) {
-        res.status(500).send('Error fetching data');
+        res.status(500).send('Error fetching/Storing data');
     }
 });
 
 
 
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+connectDb().then (() => {
+    app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+    });
+})
