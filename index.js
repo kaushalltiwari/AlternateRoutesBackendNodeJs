@@ -22,7 +22,7 @@ async function fetchWithOptions() {
   //   console.log(data);
 }
 
-app.get('/', async (req, res) => {
+app.get('/fetchAllStations', async (req, res) => {
     try {
         const data = await fetchWithOptions();
         const status = await insertAllStations(data)
