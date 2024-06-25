@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const { connectDb, insertAllStations } = require('./db')
+const TravelRoutes = require('./getStationDetails')
 const port = 3000;
 
 
@@ -22,6 +23,15 @@ async function fetchWithOptions() {
   //   console.log(data);
 }
 
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+app.get('/',  (req, res) => {
+
+    res.send("Welcome to Alternate Routes");
+    
+});
+
 app.get('/fetchAllStations', async (req, res) => {
     try {
         const data = await fetchWithOptions();
@@ -31,6 +41,19 @@ app.get('/fetchAllStations', async (req, res) => {
         res.status(500).send('Error fetching/Storing data');
     }
 });
+
+app.get('/getStationsDetails', async (req, res ) => {
+    const routes = new TravelRoutes();
+    const { source, destination, date } = req.body;
+    // const source = "NDLS";
+    // const destination = "DHN";
+    // const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, "20240630");
+    const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, date);
+    const stationCodes = await routes.returnAllStationInBetween(allTrains, source, destination);
+    console.log(stationCodes);
+    stations = await routes.returnHighTrafficStations(stationCodes);
+    res.send(stations)
+})
 
 
 

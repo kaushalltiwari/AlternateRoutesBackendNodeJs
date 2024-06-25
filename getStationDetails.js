@@ -92,19 +92,21 @@ class TravelRoutes {
         for (const [key] of sortedStations) {
             highTrafficStationCodes.push(key);
         }
-        console.log(highTrafficStationCodes);
+        // console.log(highTrafficStationCodes);
         return highTrafficStationCodes;
     }
 }
 
-(async () => {
-    const routes = new TravelRoutes();
-    // await routes.client.connect();
-    const source = "NDLS";
-    const destination = "DHN";
-    const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, "20240630");
-    const stationCodes = await routes.returnAllStationInBetween(allTrains, source, destination);
-    console.log(stationCodes);
-    await routes.returnHighTrafficStations(stationCodes);
-    // await routes.client.close();
-})();
+// (async () => {
+//     const routes = new TravelRoutes();
+//     // await routes.client.connect();
+//     const source = "NDLS";
+//     const destination = "DHN";
+//     const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, "20240630");
+//     const stationCodes = await routes.returnAllStationInBetween(allTrains, source, destination);
+//     console.log(stationCodes);
+//     await routes.returnHighTrafficStations(stationCodes);
+//     // await routes.client.close();
+// })();
+
+module.exports = TravelRoutes;
