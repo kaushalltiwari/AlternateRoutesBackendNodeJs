@@ -3,9 +3,18 @@ mongoose.connect('mongodb://127.0.0.1:27017/Alternateroutes');
 
 const { Schema } = mongoose;
 
+const generateRandomTrainNumbers = () => {
+    const trainNumbers = Math.floor(Math.random() * 300) + 1;
+    return trainNumbers;
+};
+
 const stationsSchema = new Schema({
     StationCode: String,
-    StationName: String
+    StationName: String,
+    trainNumbers: {
+        type: Number,
+        default: generateRandomTrainNumbers
+    }
 });
 
 const station = mongoose.model('stations', stationsSchema);
@@ -31,4 +40,16 @@ const insertAllStations = async (data) => {
       }
 };
 
-module.exports = { connectDb, insertAllStations };
+const searchStation = async (stationCode) => {
+
+    try {
+        const stations = await station.find({ StationCode: stationCode }).select('trainNumbers -_id');
+        console.log(stations);
+        return stations;
+    } catch (err) {
+        console.error(err);
+        throw err; // Re-throw the error if needed
+    }
+};
+
+module.exports = { connectDb, insertAllStations, searchStation };

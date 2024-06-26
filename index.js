@@ -1,10 +1,8 @@
 const express = require('express');
 const app = express();
-const { connectDb, insertAllStations } = require('./db')
+const { connectDb, insertAllStations, searchStation } = require('./db')
 const TravelRoutes = require('./getStationDetails')
 const port = 3000;
-
-
 
 async function fetchWithOptions() {
     const response = await fetch('https://api.indiantrain.in/trains/FullStationList.json', {
@@ -20,7 +18,6 @@ async function fetchWithOptions() {
     });
     const data = await response.json();
     return data;
-  //   console.log(data);
 }
 
 // Middleware to parse JSON bodies
@@ -29,6 +26,13 @@ app.use(express.json());
 app.get('/',  (req, res) => {
 
     res.send("Welcome to Alternate Routes");
+    
+});
+
+app.get('/searchStation',  async (req, res) => {
+    
+    const data = await searchStation('BUA')
+    res.send(data);
     
 });
 
