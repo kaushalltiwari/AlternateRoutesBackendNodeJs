@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const { connectDb, insertAllStations, searchStation } = require('./db')
-const {insertAllStationsToElasticsearch} = require('./elasticDb')
+const {insertAllStationsToElasticsearch, autoSearch} = require('./elasticDb')
 const TravelRoutes = require('./getStationDetails')
 const port = 3000;
 
@@ -58,6 +58,12 @@ app.get('/getStationsDetails', async (req, res ) => {
     const stationCodes = await routes.returnAllStationInBetween(allTrains, source, destination);
     console.log(stationCodes);
     stations = await routes.returnHighTrafficStations(stationCodes);
+    res.send(stations)
+})
+
+app.get('/searchSation', async (req, res ) => {
+    const stationName = req.query.stationName.toString().toLowerCase()
+    const stations = await autoSearch(stationName);
     res.send(stations)
 })
 
