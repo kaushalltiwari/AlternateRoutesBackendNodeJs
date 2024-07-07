@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const { connectDb, insertAllStations, searchStation } = require('./db')
+const {insertAllStationsToElasticsearch} = require('./elasticDb')
 const TravelRoutes = require('./getStationDetails')
 const port = 3000;
 
@@ -39,7 +40,8 @@ app.get('/searchStation',  async (req, res) => {
 app.get('/fetchAllStations', async (req, res) => {
     try {
         const data = await fetchWithOptions();
-        const status = await insertAllStations(data)
+        // const status = await insertAllStations(data)
+        const status = await insertAllStationsToElasticsearch(data)
         res.send(status);
     } catch (error) {
         res.status(500).send('Error fetching/Storing data');
@@ -61,8 +63,8 @@ app.get('/getStationsDetails', async (req, res ) => {
 
 
 
-connectDb().then (() => {
+// connectDb().then (() => {
     app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     });
-})
+// })
