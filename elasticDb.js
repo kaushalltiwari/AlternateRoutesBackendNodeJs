@@ -14,6 +14,7 @@ const client = new Client({
 });
 
 const allStationIndex = "all_stations"
+const allStationsNew = "all_stations_new"
 
 async function createIndexIfNotExists() {
   await client.indices.create({
@@ -23,6 +24,8 @@ async function createIndexIfNotExists() {
         properties: {
           stationCode: { type: 'text', fields: { keyword: { type: 'keyword' } } },
           stationName: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+          stateName: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+          cityName: { type: 'text', fields: { keyword: { type: 'keyword' } } },
           NumbersOfTrains: { type: 'integer', fields: { keyword: { type: 'keyword' } } },
           Latitude: { type: 'double', fields: { keyword: { type: 'keyword' } } },
           Longitude: { type: 'double', fields: { keyword: { type: 'keyword' } } }
@@ -30,6 +33,25 @@ async function createIndexIfNotExists() {
       }
     }
   }, { ignore: [400] })
+
+  // await client.indices.create({
+  //   index: allStationsNew,
+  //   operations: {
+  //     mappings: {
+  //       properties: {
+  //         station_name: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+  //         station_code: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+  //         state_name: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+  //         city_name: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+  //         city_label: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+  //         NumbersOfTrains: { type: 'integer', fields: { keyword: { type: 'keyword' } } },
+  //         Latitude: { type: 'double', fields: { keyword: { type: 'keyword' } } },
+  //         Longitude: { type: 'double', fields: { keyword: { type: 'keyword' } } }
+  //       }
+  //     }
+  //   }
+  // }, { ignore: [400] })
+
 }
 
 const insertAllStationsToElasticsearch = async (data) => {
@@ -37,11 +59,13 @@ const insertAllStationsToElasticsearch = async (data) => {
     await createIndexIfNotExists()
     data = data.map(data => ({
       ...data,
+      "stateName" : "TBD",
+      "cityName" : "TBD",
       "NumbersOfTrains": 0,
       "Latitude": 0.0,
       "Longitude": 0.0
     }));
-    const operations = data.flatMap(doc => [{ index: { _index: 'all_stations' } }, doc])
+    const operations = data.flatMap(doc => [{ index: { _index: allStationIndex} }, doc])
     const bulkResponse = await client.bulk({ refresh: true, operations })
     if (bulkResponse.errors) {
       const erroredDocuments = []

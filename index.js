@@ -3,7 +3,20 @@ const app = express();
 const { connectDb, insertAllStations, searchStation } = require('./db')
 const {insertAllStationsToElasticsearch, autoSearch} = require('./elasticDb')
 const TravelRoutes = require('./getStationDetails')
+const cors = require('cors');
 const port = 3000;
+
+// Define a whitelist of allowed origins (e.g., your frontend URL)
+const whitelist = ['http://localhost:5173','http://localhost:3000']; // Add your frontend URL here
+
+// Configure CORS options
+app.use(cors({
+    origin: whitelist,
+    credentials: true, // Set this to true if you need to handle cookies or authentication
+}));
+
+// Use the CORS middleware with the specified options
+// app.use(cors(corsOptions));
 
 async function fetchWithOptions() {
     const response = await fetch('https://api.indiantrain.in/trains/FullStationList.json', {
@@ -17,6 +30,20 @@ async function fetchWithOptions() {
         "sec-ch-ua-platform": "\"Windows\""
       }
     });
+    const data = await response.json();
+    return data;
+}
+
+async function fetchStationsFromrailyatri() {
+    const response = await fetch('https://food1.railyatri.in/api/common_city_station_search.json', {
+      method: 'GET',
+      headers: {
+        "origin": "https://www.railyatri.in",
+        "referer": "https://www.railyatri.in/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0"  
+      }
+    });
+
     const data = await response.json();
     return data;
 }
@@ -48,6 +75,18 @@ app.get('/fetchAllStations', async (req, res) => {
     }
 });
 
+//The following is used to fetch and store data in elastic search from 
+app.get('/fetchAllStationsFromRailYatriAndStore', async (req, res) => {
+    try {
+        const data = await fetchStationsFromrailyatri();
+        // const status = await insertAllStations(data)
+        const status = await insertAllStationsToElasticsearch(data)
+        res.send(status);
+    } catch (error) {
+        res.status(500).send('Error fetching/Storing data');
+    }
+});
+
 app.get('/getStationsDetails', async (req, res ) => {
     const routes = new TravelRoutes();
     const { source, destination, date } = req.body;
@@ -61,6 +100,7 @@ app.get('/getStationsDetails', async (req, res ) => {
     res.send(stations)
 })
 
+//Here Elastic search is used
 app.get('/searchSation', async (req, res ) => {
     const stationName = req.query.stationName.toString().toLowerCase()
     const stations = await autoSearch(stationName);
