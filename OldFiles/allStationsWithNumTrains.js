@@ -1,4 +1,5 @@
 // const fetch = require('node-fetch');
+//The code is used to retrieve and store data to Mongo db, it is now not required since elastics search is been used.
 const mongoose = require('mongoose');
 
 class ExtractStationInfo {

@@ -34,24 +34,6 @@ async function createIndexIfNotExists() {
     }
   }, { ignore: [400] })
 
-  // await client.indices.create({
-  //   index: allStationsNew,
-  //   operations: {
-  //     mappings: {
-  //       properties: {
-  //         station_name: { type: 'text', fields: { keyword: { type: 'keyword' } } },
-  //         station_code: { type: 'text', fields: { keyword: { type: 'keyword' } } },
-  //         state_name: { type: 'text', fields: { keyword: { type: 'keyword' } } },
-  //         city_name: { type: 'text', fields: { keyword: { type: 'keyword' } } },
-  //         city_label: { type: 'text', fields: { keyword: { type: 'keyword' } } },
-  //         NumbersOfTrains: { type: 'integer', fields: { keyword: { type: 'keyword' } } },
-  //         Latitude: { type: 'double', fields: { keyword: { type: 'keyword' } } },
-  //         Longitude: { type: 'double', fields: { keyword: { type: 'keyword' } } }
-  //       }
-  //     }
-  //   }
-  // }, { ignore: [400] })
-
 }
 
 const insertAllStationsToElasticsearch = async (data) => {

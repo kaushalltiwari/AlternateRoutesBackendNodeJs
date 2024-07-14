@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const { connectDb, insertAllStations, searchStation } = require('./db')
 const {insertAllStationsToElasticsearch, autoSearch} = require('./elasticDb')
 const TravelRoutes = require('./getStationDetails')
 const cors = require('cors');
@@ -8,11 +9,14 @@ const port = 3000;
 // Define a whitelist of allowed origins (e.g., your frontend URL)
 const whitelist = ['http://localhost:5173','http://localhost:3000']; // Add your frontend URL here
 
+// Configure CORS options
 app.use(cors({
     origin: whitelist,
     credentials: true, // Set this to true if you need to handle cookies or authentication
 }));
 
+// Use the CORS middleware with the specified options
+// app.use(cors(corsOptions));
 
 async function fetchWithOptions() {
     const response = await fetch('https://api.indiantrain.in/trains/FullStationList.json', {
@@ -30,6 +34,19 @@ async function fetchWithOptions() {
     return data;
 }
 
+async function fetchStationsFromrailyatri() {
+    const response = await fetch('https://food1.railyatri.in/api/common_city_station_search.json', {
+      method: 'GET',
+      headers: {
+        "origin": "https://www.railyatri.in",
+        "referer": "https://www.railyatri.in/",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0"  
+      }
+    });
+
+    const data = await response.json();
+    return data;
+}
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -40,6 +57,12 @@ app.get('/',  (req, res) => {
     
 });
 
+app.get('/searchStation',  async (req, res) => {
+    
+    const data = await searchStation('BUA')
+    res.send(data);
+    
+});
 
 app.get('/fetchAllStations', async (req, res) => {
     try {
@@ -52,59 +75,42 @@ app.get('/fetchAllStations', async (req, res) => {
     }
 });
 
-//Will Use the following function for other activity
+//The following is used to fetch and store data in elastic search from 
+app.get('/fetchAllStationsFromRailYatriAndStore', async (req, res) => {
+    try {
+        const data = await fetchStationsFromrailyatri();
+        // const status = await insertAllStations(data)
+        const status = await insertAllStationsToElasticsearch(data)
+        res.send(status);
+    } catch (error) {
+        res.status(500).send('Error fetching/Storing data');
+    }
+});
+
 app.get('/getStationsDetails', async (req, res ) => {
     const routes = new TravelRoutes();
-    // const { source, destination, date } = req.body;
-    const source = "NDLS";
-    const destination = "DHN";
-    const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, "20240728");
-    // const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, date);
-    // const stationCodes = await routes.returnAllStationInBetween(allTrains, source, destination);
-    // console.log(stationCodes);
-    // stations = await routes.returnHighTrafficStations(stationCodes);
-    res.send(allTrains)
-})
-
-app.post('/getAllDirectTrains', async (req, res ) => {
-    const routes = new TravelRoutes();
     const { source, destination, date } = req.body;
-    // console.log(req.body)
-    // console.log(`${source}--${destination}--${date}`)
+    // const source = "NDLS";
+    // const destination = "DHN";
+    // const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, "20240630");
     const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, date);
-    for (const train of allTrains.trainBtwnStnsList) {
-        tickets = [];
-        for (const travelClass of train.avlClasses) {
-            Getdetails = new TravelRoutes();
-            let quota = "GN";
-            let status = "N";
-            const details = await Getdetails.perTrainDetails(train.trainNumber,date,train.fromStnCode,train.toStnCode,travelClass,quota,status);
-            tickets.push(details);
-        }
-
-        train.ticketAviavlibility = tickets;
-    }
-    // console.log(allTrains)
-    res.send(allTrains)
+    const stationCodes = await routes.returnAllStationInBetween(allTrains, source, destination);
+    console.log(stationCodes);
+    stations = await routes.returnHighTrafficStations(stationCodes);
+    res.send(stations)
 })
 
-app.get('/perTrainDetails/:trainNumber/:date/:from/:to/:travelClass/:quota/:status', async (req, res ) => {
-    const Getdetails = new TravelRoutes();
-    const {trainNumber,date,from,to,travelClass,quota,status} = req.params;
-    const details = await Getdetails.perTrainDetails(trainNumber,date,from,to,travelClass,quota,status);
-    res.send(details);
-})
-
-/*
-Here Elastic search is used
-Search Station with domainname/searchStation?stationName=asa
-*/
+//Here Elastic search is used
 app.get('/searchSation', async (req, res ) => {
     const stationName = req.query.stationName.toString().toLowerCase()
     const stations = await autoSearch(stationName);
     res.send(stations)
 })
 
-app.listen(port, () => {
+
+
+// connectDb().then (() => {
+    app.listen(port, () => {
     console.log(`Server running on port ${port}`);
-});
+    });
+// })

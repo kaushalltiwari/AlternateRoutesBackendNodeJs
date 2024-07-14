@@ -8,6 +8,10 @@ class TravelRoutes {
             {
                 "greq": "1718544636628",
                 "Content-Type": "application/x-www-form-urlencoded",
+            },
+            {
+                "greq": "1720879916906",
+                "Content-Type": "application/json; charset=UTF-8"
             }
         ];
         // this.client = new MongoClient('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true });
@@ -16,32 +20,75 @@ class TravelRoutes {
         this.url = [
             'https://www.irctc.co.in/eticketing/protected/mapps1/altAvlEnq/TC',
             'https://www.irctc.co.in/eticketing/protected/mapps1/trnscheduleenquiry',
-            'https://api.indiantrain.in/api.asmx/ListofTrainPassingThroughStationDetailsInfo'
+            'https://api.indiantrain.in/api.asmx/ListofTrainPassingThroughStationDetailsInfo',
+            'https://www.irctc.co.in/eticketing/protected/mapps1/avlFarenquiry'
         ];
     }
 
     async fetchAllTrainsOnRoute(source, destination, journeyDate) {
+        try{
+            const body = {
+                "concessionBooking": "false",
+                "srcStn": source,
+                "destStn": destination,
+                "jrnyClass": "",
+                "jrnyDate": journeyDate,
+                "quotaCode": "GN",
+                "currentBooking": "false",
+                "flexiFlag": "false",
+                "handicapFlag": "false",
+                "ticketType": "E",
+                "loyaltyRedemptionBooking": "false",
+                "ftBooking": "false"
+            };
+            const response = await fetch(this.url[0], {
+                method: 'POST',
+                headers: this.headers[0],
+                body: JSON.stringify(body),
+                agent: new (require('https').Agent)({ rejectUnauthorized: false })
+            });
+            return response.json();
+       }catch(e) {
+              return { error: 'Failed to fetch data', details: e.message };
+       }
+    }
+
+    async perTrainDetails(trainNumber,date,from,to,travelClass,quota,status) {
         const body = {
-            "concessionBooking": "false",
-            "srcStn": source,
-            "destStn": destination,
-            "jrnyClass": "",
-            "jrnyDate": journeyDate,
-            "quotaCode": "GN",
-            "currentBooking": "false",
-            "flexiFlag": "false",
-            "handicapFlag": "false",
-            "ticketType": "E",
-            "loyaltyRedemptionBooking": "false",
-            "ftBooking": "false"
+            "paymentFlag":"N",
+            "concessionBooking":false,
+            "ftBooking":false,
+            "loyaltyRedemptionBooking":false,
+            "ticketType":"E",
+            "quotaCode":quota,
+            "moreThanOneDay":true,
+            "trainNumber":trainNumber,
+            "fromStnCode":from,
+            "toStnCode":to,
+            "isLogedinReq":false,
+            "journeyDate":date,
+            "classCode":travelClass
         };
-        const response = await fetch(this.url[0], {
-            method: 'POST',
-            headers: this.headers[0],
-            body: JSON.stringify(body),
-            agent: new (require('https').Agent)({ rejectUnauthorized: false })
-        });
-        return response.json();
+        try {
+            const finalUrl = `${this.url[3]}/${trainNumber}/${date}/${from}/${to}/${travelClass}/${quota}/${status}`
+            console.log(finalUrl)
+            const response = await fetch(finalUrl, {
+                method: 'POST',
+                headers: this.headers[2],
+                body: JSON.stringify(body),
+                agent: new (require('https').Agent)({ rejectUnauthorized: false })
+            });
+
+            if (!response.ok) {
+                // Handle HTTP errors
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+        
+            return await response.json();
+        } catch(e) {
+            return { error: 'Failed to fetch data', details: e.message };
+        }
+        
     }
 
     async returnAllStationInBetween(allTrains, source, destination) {
