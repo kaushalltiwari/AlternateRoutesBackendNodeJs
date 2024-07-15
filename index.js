@@ -68,22 +68,31 @@ app.get('/getStationsDetails', async (req, res ) => {
 
 app.post('/getAllDirectTrains', async (req, res ) => {
     const routes = new TravelRoutes();
-    const { source, destination, date } = req.body;
-    // console.log(req.body)
+    const { source, destination, date, travelClass } = req.body;
+    console.log(req.body)
     // console.log(`${source}--${destination}--${date}`)
     const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, date);
-    for (const train of allTrains.trainBtwnStnsList) {
-        tickets = [];
-        for (const travelClass of train.avlClasses) {
-            Getdetails = new TravelRoutes();
-            let quota = "GN";
-            let status = "N";
-            const details = await Getdetails.perTrainDetails(train.trainNumber,date,train.fromStnCode,train.toStnCode,travelClass,quota,status);
-            tickets.push(details);
-        }
-
-        train.ticketAviavlibility = tickets;
-    }
+    // for (const train of allTrains.trainBtwnStnsList) {
+    //     tickets = [];
+    //     train.ticketOfClassAvailable = false;
+    //     for (const tClass of train.avlClasses) {
+    //         Getdetails = new TravelRoutes();
+    //         let quota = "GN";
+    //         let status = "N";
+    //         const details = await Getdetails.perTrainDetails(train.trainNumber,date,train.fromStnCode,train.toStnCode,tClass,quota,status);
+    //         if(tClass.toString() == travelClass.toString()) {
+    //               if (details.avlDayList && details.avlDayList.length > 0) { 
+    //                 if(details.avlDayList[0].availablityStatus.includes("AVAILABLE")) {
+    //                 train.ticketOfClassAvailable = true
+    //               }
+    //             } else {
+    //                 console.log(`False for ${train.trainName} and this is the response ${JSON.stringify(details, null, 2)}`)
+    //             }
+    //         }
+    //         tickets.push({[tClass] : details});
+    //     }
+    //     train.ticketAviavlibility = tickets; 
+    // }
     // console.log(allTrains)
     res.send(allTrains)
 })

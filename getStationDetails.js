@@ -4,6 +4,7 @@ class TravelRoutes {
             {
                 "greq": "1718043848392",
                 "Content-Type": "application/json; charset=UTF-8",
+                "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
             },
             {
                 "greq": "1718544636628",
@@ -41,12 +42,16 @@ class TravelRoutes {
                 "loyaltyRedemptionBooking": "false",
                 "ftBooking": "false"
             };
+            this.headers[0].greq = (Number(this.headers[0].greq) + 1).toString();
+            
+            // console.log(this.headers[0].greq.toString())
             const response = await fetch(this.url[0], {
                 method: 'POST',
                 headers: this.headers[0],
                 body: JSON.stringify(body),
                 agent: new (require('https').Agent)({ rejectUnauthorized: false })
             });
+            
             return response.json();
        }catch(e) {
               return { error: 'Failed to fetch data', details: e.message };
@@ -71,7 +76,8 @@ class TravelRoutes {
         };
         try {
             const finalUrl = `${this.url[3]}/${trainNumber}/${date}/${from}/${to}/${travelClass}/${quota}/${status}`
-            console.log(finalUrl)
+            // console.log(finalUrl)
+            this.headers[2].greq = (Number(this.headers[2].greq) + 1).toString()
             const response = await fetch(finalUrl, {
                 method: 'POST',
                 headers: this.headers[2],
@@ -83,7 +89,9 @@ class TravelRoutes {
                 // Handle HTTP errors
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-        
+
+            // const responseData = await response.json();
+            // console.log(`Response Data: ${JSON.stringify(responseData)}`);
             return await response.json();
         } catch(e) {
             return { error: 'Failed to fetch data', details: e.message };
@@ -101,6 +109,7 @@ class TravelRoutes {
         for (const tn of trainNumbers) {
             let sourceSeen = false;
             let destSeen = false;
+            this.headers[1].greq = (Number(this.headers[1].greq) + 1).toString()
             const response = await fetch(`${this.url[1]}/${tn}`, {
                 method: 'GET',
                 headers: this.headers[1],
