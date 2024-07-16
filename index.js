@@ -14,6 +14,10 @@ app.use(cors({
 }));
 
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function fetchWithOptions() {
     const response = await fetch('https://api.indiantrain.in/trains/FullStationList.json', {
       method: 'GET',
@@ -45,7 +49,7 @@ app.get('/fetchAllStations', async (req, res) => {
     try {
         const data = await fetchWithOptions();
         // const status = await insertAllStations(data)
-        const status = await insertAllStationsToElasticsearch(data)
+        const status = await insertAllStationsToElasticsearch(data);
         res.send(status);
     } catch (error) {
         res.status(500).send('Error fetching/Storing data');
@@ -71,6 +75,7 @@ app.post('/getAllDirectTrains', async (req, res ) => {
     const { source, destination, date, travelClass } = req.body;
     console.log(req.body)
     // console.log(`${source}--${destination}--${date}`)
+    sleep(1000)
     const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, date);
     // for (const train of allTrains.trainBtwnStnsList) {
     //     tickets = [];
@@ -94,12 +99,14 @@ app.post('/getAllDirectTrains', async (req, res ) => {
     //     train.ticketAviavlibility = tickets; 
     // }
     // console.log(allTrains)
+    console.log(allTrains)
     res.send(allTrains)
 })
 
 app.get('/perTrainDetails/:trainNumber/:date/:from/:to/:travelClass/:quota/:status', async (req, res ) => {
     const Getdetails = new TravelRoutes();
     const {trainNumber,date,from,to,travelClass,quota,status} = req.params;
+    sleep(1000)
     const details = await Getdetails.perTrainDetails(trainNumber,date,from,to,travelClass,quota,status);
     res.send(details);
 })
