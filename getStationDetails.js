@@ -6,7 +6,7 @@ class TravelRoutes {
             {
                 "greq": "1718043848392",
                 "Content-Type": "application/json; charset=UTF-8",
-                "User-Agent" : ""
+                "User-Agent": ""
             },
             {
                 "greq": "1718544636628",
@@ -141,6 +141,26 @@ class TravelRoutes {
 
     }
 
+    generateRamCookie() {
+        // Original cookie string
+        const originalCookies = 'JSESSIONID=apHGVTIPQlh3ZqUpah13DLzjOxJaHncN0Dlm9eLERizCnS9C8z_q!1793813204; TS018d84e5=01d83d9ce7b27c0eba051f9a5de4d2046031ef8843ccc24068c92b81d01bbe78d7d962f67c1d1e770e1965035880fdb47ae5a7c31f; et_appVIP1=1392659978.16671.0000';
+
+        // Split the original cookies into individual key-value pairs
+        const cookiePairs = originalCookies.split('; ');
+
+        // Generate random values for each cookie key
+        const randomCookies = cookiePairs.map((pair) => {
+            const [key, value] = pair.split('=');
+            const randomValue = Math.random().toString(36).substring(2); // Generate a random alphanumeric value
+            return `${key}=${randomValue}`;
+        });
+
+        // Join the random cookies back into a single string
+        const randomCookieString = randomCookies.join('; ');
+
+        return randomCookieString.toString();
+    }
+
     async fetchAllTrainsOnRoute(source, destination, journeyDate) {
         try {
             const body = {
@@ -166,20 +186,16 @@ class TravelRoutes {
                 method: 'POST',
                 headers: this.headers[0],
                 body: JSON.stringify(body),
-                // agent: new (require('https').Agent)({ rejectUnauthorized: false })
-                agent: agent
+                Cookie: this.generateRamCookie(),
+                agent: new (require('https').Agent)({ rejectUnauthorized: false })
+                // agent: agent
             });
-            
-            console.log("fetchAllTrainsOnRoute ->" + response.status)
-            // const responseData = await response.json();
-            // console.log(`Response Data of Get All Direct Trains: ${JSON.stringify(responseData)}`);
-            // return responseData;
 
 
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 const responseData = await response.json();
-                console.log(`Response Data of Get All Direct Trains: ${JSON.stringify(responseData)}`);
+                console.log(responseData)
                 return responseData;
             } else {
                 const text = await response.text();
@@ -221,7 +237,7 @@ class TravelRoutes {
                 headers: this.headers[2],
                 body: JSON.stringify(body),
                 // agent: new (require('https').Agent)({ rejectUnauthorized: false })
-                agent : agent
+                agent: agent
             });
 
             if (!response.ok) {
@@ -255,7 +271,7 @@ class TravelRoutes {
                 method: 'GET',
                 headers: this.headers[1],
                 // agent: new (require('https').Agent)({ rejectUnauthorized: false })
-                agent : agent
+                agent: agent
             });
             const data = await response.json();
             for (const sb of data.stationList) {

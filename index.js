@@ -75,7 +75,6 @@ app.post('/getAllDirectTrains', async (req, res ) => {
     const { source, destination, date, travelClass } = req.body;
     console.log(req.body)
     // console.log(`${source}--${destination}--${date}`)
-    sleep(1000)
     const allTrains = await routes.fetchAllTrainsOnRoute(source, destination, date);
     // for (const train of allTrains.trainBtwnStnsList) {
     //     tickets = [];
@@ -99,14 +98,14 @@ app.post('/getAllDirectTrains', async (req, res ) => {
     //     train.ticketAviavlibility = tickets; 
     // }
     // console.log(allTrains)
-    console.log(allTrains)
+    // console.log(allTrains)
     res.send(allTrains)
 })
 
 app.get('/perTrainDetails/:trainNumber/:date/:from/:to/:travelClass/:quota/:status', async (req, res ) => {
     const Getdetails = new TravelRoutes();
     const {trainNumber,date,from,to,travelClass,quota,status} = req.params;
-    sleep(1000)
+    // sleep(1000)
     const details = await Getdetails.perTrainDetails(trainNumber,date,from,to,travelClass,quota,status);
     res.send(details);
 })
